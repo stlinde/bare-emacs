@@ -6,11 +6,19 @@
 (require 'package)
 (add-to-list 'package-archives '( "melpa" . "https://melpa.org/packages/") t)
 
+(defun require-package (package)
+  (unless (package-installed-p package)
+    (package-install package))
+  (require package))
+
 ;; No Littering
 (unless (package-installed-p 'no-littering)
   (package-install 'no-littering))
 (require 'no-littering)
 
+;; Setup PATH
+(require-package 'exec-path-from-shell)
+(exec-path-from-shell-initialize)
 
 ;; Custom.el
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
@@ -44,6 +52,7 @@
 ;; Line-numbers
 (when (fboundp 'display-line-numbers-mode)
   (setq-default display-line-numbers-width 3)
+  (setq display-line-numbers-type 'relative)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'org-mode-hook 'display-line-numbers-mode))
 

@@ -64,27 +64,100 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; General
+(tool-bar-mode -1)
 
 ;; Theme
 (require-package 'modus-themes)
-(modus-themes-select 'modus-operandi-deuteranopia)
+(require-package 'ef-themes)
 
-(setq modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia))
+;; Customize modus-themes
+(setopt modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia))
 (global-set-key (kbd "C-c h t") #'modus-themes-toggle)
 
+;; Customize ef-themes
+(setopt ef-themes-to-toggle '(ef-deuteranopia-dark ef-deuteranopia-light)
+	ef-themes-mixed-fonts t
+	ef-themes-variable-pitch-ui t)
+(mapc #'disable-theme custom-enabled-themes)
+
+
+(defun shl/ef-themes-mode-line ()
+  "Tweak the style of the mode lines."
+  (ef-themes-with-colors
+    (custom-set-faces
+     `(mode-line ((,c :background ,bg-active :foreground ,fg-main :box (:line-width 1 :color ,fg-dim))))
+     `(mode-line-inactive ((,c :box (:line-width 1 :color ,bg-active)))))))
+
+(defun shl/ef-themes-hl-todo-faces ()
+  "Configure `hl-todo-keyword-faces' with Ef themes colors.
+     The exact color values are taken from the active Ef theme."
+  (ef-themes-with-colors
+    (setq hl-todo-keyword-faces
+	  `(("HOLD" . ,yellow)
+	    ("TODO" . ,red)
+	    ("NEXT" . ,blue)
+	    ("THEM" . ,magenta)
+	    ("PROG" . ,cyan-warmer)
+	    ("OKAY" . ,green-warmer)
+	    ("DONT" . ,yellow-warmer)
+	    ("FAIL" . ,red-warmer)
+	    ("BUG" . ,red-warmer)
+	    ("DONE" . ,green)
+	    ("NOTE" . ,blue-warmer)
+	    ("KLUDGE" . ,cyan)
+	    ("HACK" . ,cyan)
+	    ("TEMP" . ,red)
+	    ("FIXME" . ,red-warmer)
+	    ("XXX+" . ,red-warmer)
+	    ("REVIEW" . ,red)
+	    ("DEPRECATED" . ,yellow)))))
+
+(add-hook 'ef-themes-post-load-hook #'shl/ef-themes-hl-todo-faces)
+(add-hook 'ef-themes-post-load-hook #'shl/ef-themes-mode-line)
 
 ;; Font
+
 (require 'cl-seq)
 
 (defvar dark-themes
   '("modus-vivendi-deuteranopia"
     "modus-vivendi-tinted"
-    "modus-vivendi"))
+    "modus-vivendi"
+    "ef-bio"
+    "ef-dark"
+    "ef-rosa"
+    "ef-night"
+    "ef-autumn"
+    "ef-cherie"
+    "ef-winter"
+    "ef-duo-dark"
+    "ef-elea-dark"
+    "ef-symbiosis"
+    "ef-trio-dark"
+    "ef-maris-dark"
+    "ef-melissa-dark"
+    "ef-tritanopia-dark"
+    "ef-deuteranopia-dark"))
 
 (defvar light-themes
   '("modus-operandi-deuteranopia"
     "modus-operandi-tinted"
-    "modus-operandi"))
+    "modus-operandi"
+    "ef-day"
+    "ef-frost"
+    "ef-light"
+    "ef-cyprus"
+    "ef-kassio"
+    "ef-spring"
+    "ef-summer"
+    "ef-arbutus"
+    "ef-duo-light"
+    "ef-elea-light"
+    "ef-trio-light"
+    "ef-maris-light"
+    "ef-melissa-light"
+    "ef-tritanopia-light"
+    "ef-deuteranopia-light"))
 
 (defun light-or-dark-theme ()
   (if (cl-member (car custom-enabled-themes) dark-themes :test #'string-equal)
@@ -109,15 +182,15 @@
   (set-face-attribute 'default nil
 		      :family "Iosevka Comfy"
 		      :height 105
-		      :weight 'medium)
+		      :weight 'semibold)
   (set-face-attribute 'variable-pitch nil
 		      :family "Iosevka Comfy Motion Duo"
 		      :height 105
-		      :weight 'medium)
+		      :weight 'semibold)
   (set-face-attribute 'fixed-pitch nil
 		      :family "Iosevka Comfy"
 		      :height 105
-		      :weight 'medium))
+		      :weight 'semibold))
 
 (defun modify-face ()
   (if (string-equal (light-or-dark-theme) "dark")
@@ -135,10 +208,17 @@
 
 (add-hook 'after-enable-theme-hook #'modify-face)
 
+;; Load theme
+(ef-themes-select 'ef-deuteranopia-dark)
+
+
 ;; Modeline
 (setq display-time-format " %a %e %b, %H:%M ")
 (display-time-mode)
 (display-battery-mode)
+
+(require-package 'doom-modeline)
+(add-hook 'after-init-hook #'doom-modeline-mode)
 
 ;; Line-numbers
 (when (fboundp 'display-line-numbers-mode)
@@ -291,20 +371,48 @@
 	completion-category-overrides '((file (styles partial-completion))))
 
 ;; Corfu
-(require-package 'corfu)
-(setopt corfu-auto t
-	corfu-cycle t
-	corfu-auto-delay 0.1
-	corfu-auto-prefix 1
-	corfu-popupinfo-delay '(0.5 . 0.25))
-(setopt tab-always-indent 'complete)
-(add-hook 'corfu-mode-hook #'corfu-popupinfo-mode)
+(defun setup-corfu ()
+  (require-package 'corfu)
+  (setopt corfu-auto t
+	  corfu-cycle t
+	  corfu-auto-delay 0.1
+	  corfu-auto-prefix 1
+	  corfu-popupinfo-delay '(0.5 . 0.25))
+  (setopt tab-always-indent 'complete)
+  (setopt text-mode-ispell-word-completion nil)
+  (add-hook 'corfu-mode-hook #'corfu-popupinfo-mode)
 
-(add-hook 'prog-mode-hook #'corfu-mode)
-(add-hook 'org-mode-hook #'corfu-mode)
 
-(define-key corfu-map (kbd "RET") nil)
-(define-key corfu-map (kbd "C-y") #'corfu-insert)
+  (add-hook 'prog-mode-hook #'corfu-mode)
+  (add-hook 'org-mode-hook #'corfu-mode)
+
+  (define-key corfu-map (kbd "RET") nil)
+  (define-key corfu-map (kbd "C-y") #'corfu-insert))
+
+(defun setup-company ()
+  (require-package 'company)
+
+  (add-hook 'prog-mode-hook #'company-mode))
+
+(setup-company)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Miscellaneous
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Spell Checking
+(setq ispell-local-dictionary "en_US")
+(setq ispell-program-name "hunspell")
+(setq ispell-local-dictionary-alist
+      '(("en_US" "[[:alpha:]]" "[^[:alpha:]]" "[']" nil ("-d" "en_US") nil utf-8)))
+(when (boundp 'ispell-hunspell-dictionary-alist)
+      (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist))
+
+(require-package 'jinx)
+(add-hook 'org-mode-hook 'jinx-mode)
+(setq jinx-languages "en_US")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

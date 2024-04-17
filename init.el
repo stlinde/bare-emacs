@@ -12,6 +12,9 @@
 ;; Package Repositories
 (require 'package)
 (add-to-list 'package-archives '( "melpa" . "https://melpa.org/packages/") t)
+(package-initialize)
+(package-refresh-contents)
+
 
 (defun require-package (package)
   (unless (package-installed-p package)
@@ -71,18 +74,66 @@
 
 
 ;; Font
-(set-face-attribute 'default nil
-                    :family "Iosevka Comfy"
-                    :height 105
-                    :weight 'semilight)
-(set-face-attribute 'variable-pitch nil
-                    :family "Iosevka Comfy Motion Duo"
-                    :height 105
-                    :weight 'semilight)
-(set-face-attribute 'fixed-pitch nil
-                    :family "Iosevka Comfy"
-                    :height 105
-                    :weight 'semilight)
+(require 'cl-seq)
+
+(defvar dark-themes
+  '("modus-vivendi-deuteranopia"
+    "modus-vivendi-tinted"
+    "modus-vivendi"))
+
+(defvar light-themes
+  '("modus-operandi-deuteranopia"
+    "modus-operandi-tinted"
+    "modus-operandi"))
+
+(defun light-or-dark-theme ()
+  (if (cl-member (car custom-enabled-themes) dark-themes :test #'string-equal)
+      "dark"
+    "light"))
+
+(defun light-theme-faces ()
+  (set-face-attribute 'default nil
+		      :family "Iosevka Comfy"
+		      :height 105
+		      :weight 'semilight)
+  (set-face-attribute 'variable-pitch nil
+		      :family "Iosevka Comfy Motion Duo"
+		      :height 105
+		      :weight 'semilight)
+  (set-face-attribute 'fixed-pitch nil
+		      :family "Iosevka Comfy"
+		      :height 105
+		      :weight 'semilight))
+
+(defun dark-theme-faces ()
+  (set-face-attribute 'default nil
+		      :family "Iosevka Comfy"
+		      :height 105
+		      :weight 'medium)
+  (set-face-attribute 'variable-pitch nil
+		      :family "Iosevka Comfy Motion Duo"
+		      :height 105
+		      :weight 'medium)
+  (set-face-attribute 'fixed-pitch nil
+		      :family "Iosevka Comfy"
+		      :height 105
+		      :weight 'medium))
+
+(defun modify-face ()
+  (if (string-equal (light-or-dark-theme) "dark")
+      (dark-theme-faces)
+    (light-theme-faces)))
+
+(defvar after-enable-theme-hook nil
+   "Normal hook run after enabling a theme.")
+
+(defun run-after-enable-theme-hook (&rest _args)
+   "Run `after-enable-theme-hook'."
+   (run-hooks 'after-enable-theme-hook))
+
+(advice-add 'enable-theme :after #'run-after-enable-theme-hook)
+
+(add-hook 'after-enable-theme-hook #'modify-face)
 
 ;; Modeline
 (setq display-time-format " %a %e %b, %H:%M ")
@@ -95,6 +146,15 @@
   (setq display-line-numbers-type 'relative)
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'org-mode-hook 'display-line-numbers-mode))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Evil
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(require-package 'evil)
+(evil-mode 1)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

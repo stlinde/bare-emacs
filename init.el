@@ -5,6 +5,16 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
+;;;   Config Settings
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defvar vim-p
+  "Use evil mode?")
+(setq vim-p nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
 ;;;   Packaging Settings
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -15,11 +25,22 @@
 (package-initialize)
 (package-refresh-contents)
 
+(defun install-package (package)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(defun install-packages (packages)
+  (dolist (package packages)
+    (install-package package)))
 
 (defun require-package (package)
-  (unless (package-installed-p package)
-    (package-install package))
+  (install-package package)
   (require package))
+
+(defun require-packages (packages)
+  (dolist (package packages)
+    (require-package package)))
+
 
 ;; Place code inside lisp and site-lisp for loading modules
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
@@ -67,8 +88,7 @@
 (tool-bar-mode -1)
 
 ;; Theme
-(require-package 'modus-themes)
-(require-package 'ef-themes)
+(require-packages '(modus-themes ef-themes))
 
 ;; Customize modus-themes
 (setopt modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia))
@@ -227,14 +247,46 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'org-mode-hook 'display-line-numbers-mode))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   Editing
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Use expand-region to select regions of text
+(require-package 'expand-region)
+(global-set-key (kbd "M-h") #'er/expand-region)
+
+;; Electric Mode
+(add-hook 'after-init-hook #'electric-pair-mode)
+(add-hook 'after-init-hook #'electric-indent-mode)
+
+;; Avy
+(require-package 'avy)
+(setopt avy-timeout-seconds 0.2)
+(global-set-key (kbd "M-j") #'avy-goto-char-timer)
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;   Evil
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require-package 'evil)
-(evil-mode 1)
+(when vim-p
+  (progn
+    (install-package 'evil)
+
+    (setopt evil-want-integration t
+	    evil-want-keybinding t
+	    evil-want-C-u-scroll nil
+	    evil-want-C-i-jump t
+	    evil-respect-visual-line-mode t)
+
+    ;; Ready to setup evil mode
+    (require 'evil)
+    (evil-mode 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -244,10 +296,6 @@
 
 ;; Compilation Buffer
 (add-hook 'compilation-filter-hook 'ansi-color-compilation-filter)
-
-;; Electric Mode
-(add-hook 'after-init-hook #'electric-pair-mode)
-(add-hook 'after-init-hook #'electric-indent-mode)
 
 ;; Magit
 (unless (package-installed-p 'magit)
@@ -267,18 +315,6 @@
 
 ;;; Hooks
 (add-hook 'python-ts-mode #'eglot-ensure)
-
-;; ;;; Bindings
-;; (global-set-key (kbd "C-c l l") #'eglot)
-
-;; (with-eval-after-load 'eglot
-;;   (global-set-key (kbd "C-c l c") #'eglot-reconnect)
-;;   (global-set-key (kbd "C-c l d") #'flymake-show-buffer-diagnostics)
-;;   (global-set-key (kbd "C-c l f f") #'eglot-format)
-;;   (global-set-key (kbd "C-c l f b") #'eglot-format-buffer)
-;;   (global-set-key (kbd "C-c l r n") #'eglot-rename)
-;;   (global-set-key (kbd "C-c l s") #'eglot-shutdown)
-;;   (global-set-key (kbd "C-c l i") #'eglot-inlay-hints-mode))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

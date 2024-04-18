@@ -201,16 +201,16 @@
 (defun dark-theme-faces ()
   (set-face-attribute 'default nil
 		      :family "Iosevka Comfy"
-		      :height 105
+		      :height 110
 		      :weight 'semibold)
   (set-face-attribute 'variable-pitch nil
 		      :family "Iosevka Comfy Motion Duo"
-		      :height 105
+		      :height 110
 		      :weight 'semibold)
   (set-face-attribute 'fixed-pitch nil
 		      :family "Iosevka Comfy"
-		      :height 105
-		      :weight 'semibold))
+		      :height 110
+		      :weight 'semibold))x
 
 (defun modify-face ()
   (if (string-equal (light-or-dark-theme) "dark")
@@ -365,7 +365,7 @@
 
 (setq org-capture-templates
       `(("t" "todo" entry (file "")  ; "" => `org-default-notes-file'
-         "* NEXT %?\n%U\n" :clock-resume t)
+         "* TODO %?\n%U\n" :clock-resume t)
         ("n" "note" entry (file "")
          "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
 

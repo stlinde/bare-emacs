@@ -414,16 +414,6 @@
     (setq-default compilation-directory default-directory)
     (compilation-start "rye fmt")))
 
-(defun rye-fmt-this-buffer ()
-  (interactive)
-  (let ((default-directory (project-root (project-current t)))
-	(compilation-buffer-name-function
-	 (or project-compilation-buffer-name-function
-	     compilation-buffer-name-function)))
-    (call-interactively #'compile)
-   (concat "rye lint "
-	   (buffer-file-name (window-buffer (minibuffer-selected-window))))))
-
 ;;; Bind rye commands
 (define-key python-ts-mode-map (kbd "C-c p R") #'rye-remove)
 (define-key python-ts-mode-map (kbd "C-c p a") #'rye-add)

@@ -310,6 +310,9 @@
 (require-package 'diff-hl)
 (add-hook 'after-init-hook #'global-diff-hl-mode)
 (setopt diff-hl-show-staged-changes nil)
+(global-set-key (kbd "C-x v c") #'magit-commit)
+(global-set-key (kbd "C-x v s") #'diff-hl-stage-dwim)
+(global-set-key (kbd "C-x v S") #'vc-create-tag)
 
 ;; Terminal
 (require-package 'eat)

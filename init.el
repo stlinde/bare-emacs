@@ -304,6 +304,18 @@
 (require 'magit)
 (global-set-key (kbd "C-x g") #'magit-status)
 
+;; Git Gutter
+;;; This is nice to ensure that we always know what has been changed in the
+;;; current file.
+(require-packages '(git-gutter git-gutter-fringe))
+(add-hook 'prog-mode-hook #'git-gutter-mode)
+(setq git-gutter:update-interval 0.02)
+
+;;; Appearance of git gutter
+(define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
+(define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
+(define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+
 ;; Terminal
 (require-package 'eat)
 

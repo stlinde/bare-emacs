@@ -304,17 +304,12 @@
 (require 'magit)
 (global-set-key (kbd "C-x g") #'magit-status)
 
-;; Git Gutter
+;; Diff-hl
 ;;; This is nice to ensure that we always know what has been changed in the
 ;;; current file.
-(require-packages '(git-gutter git-gutter-fringe))
-(add-hook 'prog-mode-hook #'git-gutter-mode)
-(setq git-gutter:update-interval 0.02)
-
-;;; Appearance of git gutter
-(define-fringe-bitmap 'git-gutter-fr:added [224] nil nil '(center repeated))
-(define-fringe-bitmap 'git-gutter-fr:modified [224] nil nil '(center repeated))
-(define-fringe-bitmap 'git-gutter-fr:deleted [128 192 224 240] nil nil 'bottom)
+(require-package 'diff-hl)
+(add-hook 'after-init-hook #'global-diff-hl-mode)
+(setopt diff-hl-show-staged-changes nil)
 
 ;; Terminal
 (require-package 'eat)

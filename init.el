@@ -348,10 +348,81 @@
                '(pyright "^[[:blank:]]+\\(.+\\):\\([0-9]+\\):\\([0-9]+\\).*$" 1 2 3))
   (add-to-list 'compilation-error-regexp-alist 'pyright))
 
-(with-eval-after-load 'python-ts-mode
-  (defun rye-add (package)
-    (interactive)
-    (async-shell-command (concat "rye add " package))))
+
+;;; Rye Functionality
+
+;; Maybe ensure that this only shows output on errors
+(defun rye-add (package)
+  (interactive "sPackage: ")
+  (async-shell-command (concat "rye add " package)))
+
+(defun rye-add-dev (package)
+  (interactive)
+  (async-shell-command (concat "rye add --dev " package)))
+
+(defun rye-remove (package)
+  (interactive "sPackage: ")
+  (async-shell-command (concat "rye remove " package)))
+
+(defun rye-lint-this-buffer ()
+  (interactive)
+  (save-some-buffers (not compilation-ask-about-save)
+                     compilation-save-buffers-predicate)
+  (setq-default compilation-directory default-directory)
+  (compilation-start (concat "rye lint "
+			     (buffer-file-name (window-buffer
+						(minibuffer-selected-window))))))
+
+(defun rye-lint-project ()
+  (interactive)
+  (let ((default-directory (project-root (project-current t)))
+        (compilation-buffer-name-function
+         (or project-compilation-buffer-name-function
+             compilation-buffer-name-function)))
+    (save-some-buffers (not compilation-ask-about-save)
+                       compilation-save-buffers-predicate)
+    (setq-default compilation-directory default-directory)
+    (compilation-start "rye lint")))
+
+(defun rye-fmt-this-buffer ()
+  (interactive)
+  (save-some-buffers (not compilation-ask-about-save)
+                     compilation-save-buffers-predicate)
+  (setq-default compilation-directory default-directory)
+  (compilation-start (concat "rye fmt "
+			     (buffer-file-name (window-buffer
+						(minibuffer-selected-window))))))
+
+(defun rye-fmt-project ()
+  (interactive)
+  (let ((default-directory (project-root (project-current t)))
+        (compilation-buffer-name-function
+         (or project-compilation-buffer-name-function
+             compilation-buffer-name-function)))
+    (save-some-buffers (not compilation-ask-about-save)
+                       compilation-save-buffers-predicate)
+    (setq-default compilation-directory default-directory)
+    (compilation-start "rye fmt")))
+
+(defun rye-fmt-this-buffer ()
+  (interactive)
+  (let ((default-directory (project-root (project-current t)))
+	(compilation-buffer-name-function
+	 (or project-compilation-buffer-name-function
+	     compilation-buffer-name-function)))
+    (call-interactively #'compile)
+   (concat "rye lint "
+	   (buffer-file-name (window-buffer (minibuffer-selected-window))))))
+
+;;; Bind rye commands
+(define-key python-ts-mode-map (kbd "C-c p R") #'rye-remove)
+(define-key python-ts-mode-map (kbd "C-c p a") #'rye-add)
+(define-key python-ts-mode-map (kbd "C-c p A") #'rye-add-dev)
+(define-key python-ts-mode-map (kbd "C-c p l") #'rye-lint-this-buffer)
+(define-key python-ts-mode-map (kbd "C-c p L") #'rye-lint-project)
+(define-key python-ts-mode-map (kbd "C-c p f") #'rye-fmt-this-buffer)
+(define-key python-ts-mode-map (kbd "C-c p F") #'rye-fmt-project)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -436,7 +436,7 @@
 (global-set-key (kbd "C-c c") #'org-capture)
 (global-set-key (kbd "C-c a") #'org-agenda)
 
-(setopt org-directory "/home/slinde/org/"
+(setopt org-directory "/home/slinde/memex/"
 	org-default-notes-file (concat org-directory "inbox.org")
 	org-agenda-files `(,org-directory))
 

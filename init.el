@@ -211,7 +211,7 @@
   (set-face-attribute 'fixed-pitch nil
 		      :family "Iosevka Comfy"
 		      :height 110
-		      :weight 'semibold))x
+		      :weight 'semibold))
 
 (defun modify-face ()
   (if (string-equal (light-or-dark-theme) "dark")

@@ -333,6 +333,11 @@
 (add-hook 'python-mode-hook 'python-ts-mode)
 
 ;;; Setup Emacs-Pet
+;;; Using only envrc-mode gets our LSP working, but not the Inferior Python shell.
+;;; To ensure that we use the right python shell, we need to use pet.
+;;; We might be able to pull out the required functionality.
+;;; Currently there is a bug in pet when running Emacs head.
+;;; Thus, I've downloaded the file and changed the lines - there is already a pull request.
 (require-package 'f)
 (require 'pet)
 (add-hook 'python-base-mode-hook #'pet-mode -10)

@@ -230,7 +230,7 @@
 (add-hook 'after-enable-theme-hook #'modify-face)
 
 ;; Load theme
-(ef-themes-select 'ef-deuteranopia-dark)
+(ef-themes-select 'modus-vivendi)
 
 
 ;; Modeline

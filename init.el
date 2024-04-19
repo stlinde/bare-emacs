@@ -60,6 +60,7 @@
 ;; Setup PATH
 (require-package 'exec-path-from-shell)
 (exec-path-from-shell-initialize)
+(exec-path-from-shell-copy-env "PAT")
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))

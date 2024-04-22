@@ -13,6 +13,10 @@
   "Use evil mode?")
 (setq vim-p nil)
 
+(defvar first-setup-p
+  "t setting up on new machine")
+(setq first-setup-p nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
 ;;;   Packaging Settings
@@ -230,7 +234,7 @@
 (add-hook 'after-enable-theme-hook #'modify-face)
 
 ;; Load theme
-(modus-themes-select 'modus-operandi)
+(modus-themes-select 'modus-vivendi)
 
 
 ;; Modeline
@@ -326,6 +330,7 @@
 
 ;;; Hooks
 (add-hook 'python-ts-mode #'eglot-ensure)
+(add-hook 'c-mode-hook #'eglot-ensure)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -334,10 +339,16 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; C Programming
-(add-hook 'c-mode-hook 'c-ts-mode)
-(add-hook 'c-ts-mode-hook (lambda ()
-			    (setq-local c-ts-mode-indent-style 'linux)
-			    (setq-local c-ts-mode-indent-offset 8)))
+;; (add-hook 'c-mode-hook 'c-ts-mode)
+;; (add-hook 'c-ts-mode-hook (lambda ()
+;; 			    (setq-local c-ts-mode-indent-style 'linux)
+;; 			    (setq-local c-ts-mode-indent-offset 8)))
+
+(require-packages '(cc-mode cmake-mode))
+(setopt c-default-style "linux")
+
+;; CMake
+
 
 ;; Python Programming
 (add-hook 'python-mode-hook 'python-ts-mode)
@@ -526,6 +537,19 @@
 (require-package 'jinx)
 (add-hook 'org-mode-hook 'jinx-mode)
 (setq jinx-languages "en_US")
+
+;; PDF
+(require-package 'pdf-tools)
+(when first-setup-p
+  (pdf-tools-install))
+
+;; Beardbolt
+(when first-setup-p
+  (async-shell-command "git clone https://github.com/joaotavora/beardbolt.git")
+  (async-shell-command "cd beardbolt && make"))
+(add-to-list 'load-path (concat user-emacs-directory "beardbolt"))
+(require 'beardbolt)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -8,7 +8,7 @@
 
 (global-set-key (kbd "C-c w") 'eww)
 
-(require-package 'language-detection)
+(shl::package::require 'language-detection)
 (require 'cl-lib)
 
 (defun eww-tag-pre (dom)

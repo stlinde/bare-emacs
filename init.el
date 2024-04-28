@@ -11,11 +11,41 @@
 
 (defvar vim-p
   "Use evil mode?")
-(setq vim-p t)
+(setq vim-p nil)
 
 (defvar first-setup-p
   "t setting up on new machine")
 (setq first-setup-p nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;
+;;;   SHL standard library
+;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun shl::package::install (package)
+  (unless (package-installed-p package)
+    (package-install package)))
+
+(defun shl::package::install-mult (packages)
+  (dolist (package packages)
+    (shl::package::install package)))
+
+(defun shl::package::require (package)
+  (shl::package::install package)
+  (require package))
+
+(defun shl::package::require-mult (packages)
+  (dolist (package packages)
+    (shl::package::require package)))
+
+(defun shl::package::vc-install (package package-url)
+  (unless (package-installed-p package)
+    (package-vc-install package-url)))
+
+(defun shl::package::vc-require (package package-url)
+  (shl::package::vc-install package package-url)
+  (require package))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -29,30 +59,6 @@
 (unless package-archive-contents
   (package-refresh-contents))
 
-
-(defun install-package (package)
-  (unless (package-installed-p package)
-    (package-install package)))
-
-(defun install-packages (packages)
-  (dolist (package packages)
-    (install-package package)))
-
-(defun require-package (package)
-  (install-package package)
-  (require package))
-
-(defun require-packages (packages)
-  (dolist (package packages)
-    (require-package package)))
-
-(defun install-vc-package (package package-url)
-  (unless (package-installed-p package)
-    (package-vc-install package-url)))
-
-(defun require-vc-package (package package-url)
-  (install-vc-package package package-url)
-  (require package))
 
 ;; Place code inside lisp and site-lisp for loading modules
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))
@@ -68,16 +74,17 @@
 (setq native-comp-async-report-warnings-errors 'silent)
 
 ;; GCMH
-(require-package 'gcmh)
+(shl::package::require 'gcmh)
 (gcmh-mode 1)
 
 ;; No Littering
-(require-package 'no-littering)
+(shl::package::require 'no-littering)
 
 ;; Setup PATH
-(require-package 'exec-path-from-shell)
+(shl::package::require 'exec-path-from-shell)
 (exec-path-from-shell-initialize)
 (exec-path-from-shell-copy-env "PAT")
+(exec-path-from-shell-copy-env "NOTES")
 
 (setq custom-file (expand-file-name "custom.el" user-emacs-directory))
 (setq backup-directory-alist `(("." . ,(concat user-emacs-directory "backups"))))
@@ -107,7 +114,7 @@
 (scroll-bar-mode -1)
 
 ;; Theme
-(require-packages '(modus-themes ef-themes))
+(shl::package::require-mult '(modus-themes ef-themes))
 
 ;; Customize modus-themes
 (setopt modus-themes-to-toggle '(modus-operandi-deuteranopia modus-vivendi-deuteranopia))
@@ -120,14 +127,14 @@
 (mapc #'disable-theme custom-enabled-themes)
 
 
-(defun shl/ef-themes-mode-line ()
+(defun shl::ui::ef-themes-mode-line ()
   "Tweak the style of the mode lines."
   (ef-themes-with-colors
     (custom-set-faces
      `(mode-line ((,c :background ,bg-active :foreground ,fg-main :box (:line-width 1 :color ,fg-dim))))
      `(mode-line-inactive ((,c :box (:line-width 1 :color ,bg-active)))))))
 
-(defun shl/ef-themes-hl-todo-faces ()
+(defun shl::ui::ef-themes-hl-todo-faces ()
   "Configure `hl-todo-keyword-faces' with Ef themes colors.
      The exact color values are taken from the active Ef theme."
   (ef-themes-with-colors
@@ -151,8 +158,8 @@
 	    ("REVIEW" . ,red)
 	    ("DEPRECATED" . ,yellow)))))
 
-(add-hook 'ef-themes-post-load-hook #'shl/ef-themes-hl-todo-faces)
-(add-hook 'ef-themes-post-load-hook #'shl/ef-themes-mode-line)
+(add-hook 'ef-themes-post-load-hook #'shl::ui::ef-themes-hl-todo-faces)
+(add-hook 'ef-themes-post-load-hook #'shl::ui::ef-themes-mode-line)
 
 ;; Font
 
@@ -202,7 +209,7 @@
     "lambda-light"
     "lambda-light-faded"))
 
-(defun light-or-dark-theme ()
+(defun shl::ui::light-or-dark-theme ()
   (if (cl-member (car custom-enabled-themes) dark-themes :test #'string-equal)
       "dark"
     "light"))
@@ -235,21 +242,21 @@
 		      :height 110
 		      :weight 'semibold))
 
-(defun modify-face ()
-  (if (string-equal (light-or-dark-theme) "dark")
+(defun shl::ui::modify-face ()
+  (if (string-equal (shl::ui::light-or-dark-theme) "dark")
       (dark-theme-faces)
     (light-theme-faces)))
 
 (defvar after-enable-theme-hook nil
    "Normal hook run after enabling a theme.")
 
-(defun run-after-enable-theme-hook (&rest _args)
+(defun shl::ui::run-after-enable-theme-hook (&rest _args)
    "Run `after-enable-theme-hook'."
    (run-hooks 'after-enable-theme-hook))
 
-(advice-add 'enable-theme :after #'run-after-enable-theme-hook)
+(advice-add 'enable-theme :after #'shl::ui::run-after-enable-theme-hook)
 
-(add-hook 'after-enable-theme-hook #'modify-face)
+(add-hook 'after-enable-theme-hook #'shl::ui::modify-face)
 
 ;; Load theme
 (modus-themes-select 'modus-vivendi)
@@ -260,7 +267,7 @@
 (display-time-mode)
 (display-battery-mode)
 
-(require-package 'doom-modeline)
+(shl::package::require 'doom-modeline)
 (add-hook 'after-init-hook #'doom-modeline-mode)
 
 ;; Line-numbers
@@ -273,7 +280,7 @@
 ;;; Tabs
 (require 'tab-bar)
 
-(defun shl/tab-bar-tab-name-format (tab i)
+(defun shl::ui::tab-bar-tab-name-format (tab i)
     (let ((current-p (eq (car tab) 'current-tab))
     (propertize
     (concat
@@ -289,31 +296,53 @@
     'face (funcall tab-bar-tab-face-function tab)))))
 
 ;; See https://github.com/rougier/nano-modeline/issues/33
-(defun shl/tab-bar-suffix ()
+(defun shl::ui::tab-bar-suffix ()
     "Add empty space.
 This ensures that the last tab's face does not extend to the end
 of the tab bar."
     " ")
 
 (setopt tab-bar-show t
-	tab-bar-tab-hints nil
+	tab-bar-tab-hints t
 	tab-bar-new-tab-choice "*scratch*"
 	tab-bar-select-tab-modifiers '(super)
 	tab-bar-close-tab-select 'recent
 	tab-bar-new-tab-to 'rightmost
-	tab-bar-tab-name-format-function #'shl/tab-bar-tab-name-format
 	tab-bar-format '(tab-bar-format-history
-			tab-bar-format-tabs
-			shl/tab-bar-suffix
-			tab-bar-format-add-tab))
+			 tab-bar-format-tabs
+			 shl::ui::tab-bar-suffix
+			 tab-bar-format-add-tab))
+
 
 ;; Tabspaces
-(require-package 'tabspaces)
+(shl::package::require 'tabspaces)
 (define-key project-prefix-map (kbd "p") #'tabspaces-open-or-create-project-and-workspace)
 (add-hook 'after-init-hook #'tabspaces-mode)
 
 (setopt tabspaces-use-filtered-buffers-as-default t
 	tabspaces-default-tab "Home")
+
+;;; Treemacs
+(shl::package::require-mult '(treemacs
+		    treemacs-tab-bar
+		    treemacs-nerd-icons
+		    treemacs-magit))
+
+(setopt treemacs-follow-after-init t
+	treemacs-width 35
+	treemacs-indentation 2
+	treemacs-collapse-dirs 3
+	treemacs-sorting 'alphabetic-asc
+	treemacs-show-hidden-files nil)
+
+(with-eval-after-load 'treemacs
+  (treemacs-follow-mode t)
+  (treemacs-filewatch-mode t)
+  (treemacs-fringe-indicator-mode t)
+  (treemacs-git-commit-diff-mode t))
+
+(global-set-key (kbd "C-c e") #'treemacs)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -322,7 +351,7 @@ of the tab bar."
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Use expand-region to select regions of text
-(require-package 'expand-region)
+(shl::package::require 'expand-region)
 (global-set-key (kbd "M-h") #'er/expand-region)
 
 ;; Electric Mode
@@ -330,7 +359,7 @@ of the tab bar."
 (add-hook 'after-init-hook #'electric-indent-mode)
 
 ;; Avy
-(require-package 'avy)
+(shl::package::require 'avy)
 (setopt avy-timeout-seconds 0.2)
 (global-set-key (kbd "M-j") #'avy-goto-char-timer)
 
@@ -343,7 +372,7 @@ of the tab bar."
 
 (when vim-p
   (progn
-    (install-packages '(evil evil-commentary))
+    (shl::package::install-mult '(evil evil-commentary))
 
     (setopt evil-want-integration t
 	    evil-want-keybinding t
@@ -374,7 +403,7 @@ of the tab bar."
 ;; Diff-hl
 ;;; This is nice to ensure that we always know what has been changed in the
 ;;; current file.
-(require-package 'diff-hl)
+(shl::package::require 'diff-hl)
 (add-hook 'after-init-hook #'global-diff-hl-mode)
 (setopt diff-hl-show-staged-changes nil)
 (global-set-key (kbd "C-x v c") #'magit-commit)
@@ -382,14 +411,14 @@ of the tab bar."
 (global-set-key (kbd "C-x v S") #'vc-create-tag)
 
 ;; Terminal
-(require-package 'eat)
+(shl::package::require 'eat)
 
 ;; Direnv
-(require-package 'envrc)
+(shl::package::require 'envrc)
 (add-hook 'after-init-hook #'envrc-global-mode)
 
 ;; Eglot
-(require-package 'eglot)
+(shl::package::require 'eglot)
 
 ;;; Hooks
 (add-hook 'python-ts-mode #'eglot-ensure)
@@ -407,7 +436,7 @@ of the tab bar."
 ;; 			    (setq-local c-ts-mode-indent-style 'linux)
 ;; 			    (setq-local c-ts-mode-indent-offset 8)))
 
-(require-packages '(cc-mode cmake-mode))
+(shl::package::require-mult '(cc-mode cmake-mode))
 (setopt c-default-style "linux")
 
 ;; CMake
@@ -422,7 +451,7 @@ of the tab bar."
 ;;; We might be able to pull out the required functionality.
 ;;; Currently there is a bug in pet when running Emacs head.
 ;;; Thus, I've downloaded the file and changed the lines - there is already a pull request.
-(require-package 'f)
+(shl::package::require 'f)
 (require 'pet)
 (add-hook 'python-base-mode-hook #'pet-mode -10)
 
@@ -503,22 +532,26 @@ of the tab bar."
 ;;;   Org Mode
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(require-package 'org)
+(shl::package::require 'org)
 
 ;; Keybindings
 (global-set-key (kbd "C-c l") #'org-store-link)
 (global-set-key (kbd "C-c c") #'org-capture)
 (global-set-key (kbd "C-c a") #'org-agenda)
 
-(setopt org-directory "/home/slinde/memex/"
-	org-default-notes-file (concat org-directory "inbox.org")
+(setopt org-directory (getenv "NOTES")
+	org-default-notes-file (concat org-directory "work/inbox.org")
 	org-agenda-files `(,org-directory))
 
 (setq org-capture-templates
-      `(("t" "todo" entry (file "")  ; "" => `org-default-notes-file'
+      `(("t" "work todo" entry (file+headline "$work/inbox.org" "Tasks")
          "* TODO %?\n%U\n" :clock-resume t)
-        ("n" "note" entry (file "")
-         "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
+	("T" "personal todo" entry (file+headline "$personal/inbox.org" "Notes")
+         "* TODO %?\n%U\n" :clock-resume t)
+        ("n" "work note" entry (file+headline "work/inbox.org" "Tasks")
+         "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
+	("N" "personal note" entry (file+headline "$personal/inbox.org" "Notes")
+	 "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -530,18 +563,18 @@ of the tab bar."
 (savehist-mode)  ;; Enable last used commands
 
 ;; Vertico
-(require-package 'vertico)
+(shl::package::require 'vertico)
 (add-hook 'after-init-hook #'vertico-mode)
 
 ;;; Hide commands in M-x that does not work in the current mode.
 (setopt read-extended-command-predicate #'command-completion-default-include-p)
 
 ;; Marginalia
-(require-package 'marginalia)
+(shl::package::require 'marginalia)
 (add-hook 'after-init-hook #'marginalia-mode)
 
 ;; Embark
-(require-package 'embark)
+(shl::package::require 'embark)
 
 ;; This functions as an alternative which-key.
 ;; Instead of showing all the commands automatically, you hit C-h after to get
@@ -552,14 +585,14 @@ of the tab bar."
 (global-set-key (kbd "C-h B") #'embark-bindings)
 
 ;; Orderless
-(require-package 'orderless)
+(shl::package::require 'orderless)
 (setopt completion-styles '(orderless basic)
 	completion-category-defaults nil
 	completion-category-overrides '((file (styles partial-completion))))
 
 ;; Corfu
-(defun setup-corfu ()
-  (require-package 'corfu)
+(defun shl::completion::setup-corfu ()
+  (shl::package::require 'corfu)
   (setopt corfu-auto t
 	  corfu-cycle t
 	  corfu-auto-delay 0.1
@@ -576,12 +609,12 @@ of the tab bar."
   (define-key corfu-map (kbd "RET") nil)
   (define-key corfu-map (kbd "C-y") #'corfu-insert))
 
-(defun setup-company ()
-  (require-package 'company)
+(defun shl::completion::setup-company ()
+  (shl::package::require 'company)
 
   (add-hook 'prog-mode-hook #'company-mode))
 
-(setup-company)
+(shl::completion::setup-company)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -597,12 +630,12 @@ of the tab bar."
 (when (boundp 'ispell-hunspell-dictionary-alist)
       (setq ispell-hunspell-dictionary-alist ispell-local-dictionary-alist))
 
-(require-package 'jinx)
+(shl::package::require 'jinx)
 (add-hook 'org-mode-hook 'jinx-mode)
 (setq jinx-languages "en_US")
 
 ;; PDF
-(require-package 'pdf-tools)
+(shl::package::require 'pdf-tools)
 (when first-setup-p
   (pdf-tools-install))
 

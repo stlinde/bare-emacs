@@ -23,11 +23,12 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Package Repositories
 (require 'package)
 (add-to-list 'package-archives '( "melpa" . "https://melpa.org/packages/") t)
 (package-initialize)
-(package-refresh-contents)
+(unless package-archive-contents
+  (package-refresh-contents))
+
 
 (defun install-package (package)
   (unless (package-installed-p package)
@@ -45,6 +46,13 @@
   (dolist (package packages)
     (require-package package)))
 
+(defun install-vc-package (package package-url)
+  (unless (package-installed-p package)
+    (package-vc-install package-url)))
+
+(defun require-vc-package (package package-url)
+  (install-vc-package package package-url)
+  (require package))
 
 ;; Place code inside lisp and site-lisp for loading modules
 (add-to-list 'load-path (concat user-emacs-directory "site-lisp/"))

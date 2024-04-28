@@ -11,7 +11,7 @@
 
 (defvar vim-p
   "Use evil mode?")
-(setq vim-p nil)
+(setq vim-p t)
 
 (defvar first-setup-p
   "t setting up on new machine")
@@ -67,6 +67,10 @@
 ;; Turn warnings off
 (setq native-comp-async-report-warnings-errors 'silent)
 
+;; GCMH
+(require-package 'gcmh)
+(gcmh-mode 1)
+
 ;; No Littering
 (require-package 'no-littering)
 
@@ -100,6 +104,7 @@
 
 ;; General
 (tool-bar-mode -1)
+(scroll-bar-mode -1)
 
 ;; Theme
 (require-packages '(modus-themes ef-themes))
@@ -265,6 +270,50 @@
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'org-mode-hook 'display-line-numbers-mode))
 
+;;; Tabs
+(require 'tab-bar)
+
+(defun shl/tab-bar-tab-name-format (tab i)
+    (let ((current-p (eq (car tab) 'current-tab))
+    (propertize
+    (concat
+	" "
+	(propertize " " 'display '(space :width (4)))
+	(alist-get 'name tab)
+	(or (and tab-bar-close-button-show
+		(not (eq tab-bar-close-button-show
+			(if current-p 'non-selected 'selected)))
+		tab-bar-close-button)
+	    "")
+	(propertize " " 'display '(space :width (4))))
+    'face (funcall tab-bar-tab-face-function tab)))))
+
+;; See https://github.com/rougier/nano-modeline/issues/33
+(defun shl/tab-bar-suffix ()
+    "Add empty space.
+This ensures that the last tab's face does not extend to the end
+of the tab bar."
+    " ")
+
+(setopt tab-bar-show t
+	tab-bar-tab-hints nil
+	tab-bar-new-tab-choice "*scratch*"
+	tab-bar-select-tab-modifiers '(super)
+	tab-bar-close-tab-select 'recent
+	tab-bar-new-tab-to 'rightmost
+	tab-bar-tab-name-format-function #'shl/tab-bar-tab-name-format
+	tab-bar-format '(tab-bar-format-history
+			tab-bar-format-tabs
+			shl/tab-bar-suffix
+			tab-bar-format-add-tab))
+
+;; Tabspaces
+(require-package 'tabspaces)
+(define-key project-prefix-map (kbd "p") #'tabspaces-open-or-create-project-and-workspace)
+(add-hook 'after-init-hook #'tabspaces-mode)
+
+(setopt tabspaces-use-filtered-buffers-as-default t
+	tabspaces-default-tab "Home")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;
@@ -294,7 +343,7 @@
 
 (when vim-p
   (progn
-    (install-package 'evil)
+    (install-packages '(evil evil-commentary))
 
     (setopt evil-want-integration t
 	    evil-want-keybinding t
@@ -304,7 +353,8 @@
 
     ;; Ready to setup evil mode
     (require 'evil)
-    (evil-mode 1)))
+    (evil-mode 1)
+    (evil-commentary-mode)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

@@ -64,10 +64,11 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Turn warnings off
+(setq native-comp-async-report-warnings-errors 'silent)
+
 ;; No Littering
-(unless (package-installed-p 'no-littering)
-  (package-install 'no-littering))
-(require 'no-littering)
+(require-package 'no-littering)
 
 ;; Setup PATH
 (require-package 'exec-path-from-shell)
@@ -170,7 +171,9 @@
     "ef-maris-dark"
     "ef-melissa-dark"
     "ef-tritanopia-dark"
-    "ef-deuteranopia-dark"))
+    "ef-deuteranopia-dark"
+    "lambda-dark"
+    "lambda-dark-faded"))
 
 (defvar light-themes
   '("modus-operandi-deuteranopia"
@@ -190,7 +193,9 @@
     "ef-maris-light"
     "ef-melissa-light"
     "ef-tritanopia-light"
-    "ef-deuteranopia-light"))
+    "ef-deuteranopia-light"
+    "lambda-light"
+    "lambda-light-faded"))
 
 (defun light-or-dark-theme ()
   (if (cl-member (car custom-enabled-themes) dark-themes :test #'string-equal)
@@ -553,8 +558,8 @@
 
 ;; Beardbolt
 (when first-setup-p
-  (async-shell-command "git clone https://github.com/joaotavora/beardbolt.git")
-  (async-shell-command "cd beardbolt && make"))
+  (shell-command (concat "git clone https://github.com/joaotavora/beardbolt.git " user-emacs-directory "/beardbolt"))
+  (shell-command "cd beardbolt && make"))
 (add-to-list 'load-path (concat user-emacs-directory "beardbolt"))
 (require 'beardbolt)
 

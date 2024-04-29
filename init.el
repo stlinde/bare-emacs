@@ -9,6 +9,9 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defvar shl::ui::theme 'modus-vivendi-tinted
+  "Theme to use")
+
 (defvar vim-p
   "Use evil mode?")
 (setq vim-p nil)
@@ -22,6 +25,14 @@
 ;;;   SHL standard library
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defun shl::ui::set-theme (theme)
+  "Set theme, and run custom load hooks."
+  (cond ((member theme modus-themes-items)
+	 (modus-themes-select theme))
+	((member theme ef-themes-items)
+	 (ef-themes-select theme))
+	(load-theme theme :no-confirm)))
 
 (defun shl::package::install (package)
   (unless (package-installed-p package)
@@ -69,6 +80,9 @@
 ;;;   General Settings
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Start emacs server
+(server-start)
 
 ;; Turn warnings off
 (setq native-comp-async-report-warnings-errors 'silent)
@@ -259,7 +273,7 @@
 (add-hook 'after-enable-theme-hook #'shl::ui::modify-face)
 
 ;; Load theme
-(modus-themes-select 'modus-vivendi)
+(shl::ui::set-theme shl::ui::theme)
 
 
 ;; Modeline
@@ -303,11 +317,14 @@ of the tab bar."
     " ")
 
 (setopt tab-bar-show t
-	tab-bar-tab-hints t
+	tab-bar-tab-hints 1
 	tab-bar-new-tab-choice "*scratch*"
 	tab-bar-select-tab-modifiers '(super)
 	tab-bar-close-tab-select 'recent
 	tab-bar-new-tab-to 'rightmost
+	tab-bar-new-button nil
+	tab-bar-close-button nil
+	tab-bar-auto-width nil
 	tab-bar-format '(tab-bar-format-history
 			 tab-bar-format-tabs
 			 shl::ui::tab-bar-suffix
@@ -544,13 +561,13 @@ of the tab bar."
 	org-agenda-files `(,org-directory))
 
 (setq org-capture-templates
-      `(("t" "work todo" entry (file+headline "$work/inbox.org" "Tasks")
+      `(("t" "work todo" entry (file+headline "work/inbox.org" "Tasks")
          "* TODO %?\n%U\n" :clock-resume t)
-	("T" "personal todo" entry (file+headline "$personal/inbox.org" "Notes")
+	("T" "personal todo" entry (file+headline "personal/inbox.org" "Notes")
          "* TODO %?\n%U\n" :clock-resume t)
         ("n" "work note" entry (file+headline "work/inbox.org" "Tasks")
          "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
-	("N" "personal note" entry (file+headline "$personal/inbox.org" "Notes")
+	("N" "personal note" entry (file+headline "personal/inbox.org" "Notes")
 	 "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

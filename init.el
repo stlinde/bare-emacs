@@ -82,7 +82,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Start emacs server
-(server-start)
+;; (server-start)
 
 ;; Turn warnings off
 (setq native-comp-async-report-warnings-errors 'silent)
@@ -349,6 +349,7 @@ of the tab bar."
 	treemacs-width 35
 	treemacs-indentation 2
 	treemacs-collapse-dirs 3
+	treemacs-is-never-other-window t
 	treemacs-sorting 'alphabetic-asc
 	treemacs-show-hidden-files nil)
 

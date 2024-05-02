@@ -84,6 +84,9 @@
 ;; Start emacs server
 ;; (server-start)
 
+;; Turn of bells
+(setq ring-bell-function 'ignore)
+
 ;; Turn warnings off
 (setq native-comp-async-report-warnings-errors 'silent)
 

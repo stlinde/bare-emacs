@@ -9,7 +9,7 @@
 ;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defvar shl::ui::theme 'modus-vivendi-tinted
+(defvar shl::ui::theme 'modus-operandi-deuteranopia
   "Theme to use")
 
 (defvar vim-p
@@ -129,6 +129,7 @@
 ;; General
 (tool-bar-mode -1)
 (scroll-bar-mode -1)
+(menu-bar-mode -1)
 
 ;; Theme
 (shl::package::require-mult '(modus-themes ef-themes))
@@ -297,6 +298,11 @@
 ;;; Tabs
 (require 'tab-bar)
 
+(defun shl::ui::tab-bar-format-menu-bar ()
+      "Produce the Menu button for the tab bar that shows the menu bar."
+      `((menu-bar menu-item (propertize " 𝝺 " 'face 'tab-bar-tab-inactive)
+                  tab-bar-menu-bar :help "Menu Bar")))
+
 (defun shl::ui::tab-bar-tab-name-format (tab i)
     (let ((current-p (eq (car tab) 'current-tab))
     (propertize
@@ -314,13 +320,13 @@
 
 ;; See https://github.com/rougier/nano-modeline/issues/33
 (defun shl::ui::tab-bar-suffix ()
-    "Add empty space.
+  "Add empty space.
 This ensures that the last tab's face does not extend to the end
 of the tab bar."
-    " ")
+  " ")
 
 (setopt tab-bar-show t
-	tab-bar-tab-hints 1
+	tab-bar-tab-hints t
 	tab-bar-new-tab-choice "*scratch*"
 	tab-bar-select-tab-modifiers '(super)
 	tab-bar-close-tab-select 'recent
@@ -328,10 +334,15 @@ of the tab bar."
 	tab-bar-new-button nil
 	tab-bar-close-button nil
 	tab-bar-auto-width nil
-	tab-bar-format '(tab-bar-format-history
+	tab-bar-format '(shl::ui::tab-bar-format-menu-bar
+			 tab-bar-format-history
 			 tab-bar-format-tabs
 			 shl::ui::tab-bar-suffix
-			 tab-bar-format-add-tab))
+			 tab-bar-format-align-right
+			 tab-bar-format-global))
+
+(add-to-list 'tab-bar-format #'tab-bar-format-menu-bar)
+
 
 
 ;; Tabspaces
@@ -573,6 +584,9 @@ of the tab bar."
          "* %? :NOTE:\n%U\n%a\n" :clock-resume t)
 	("N" "personal note" entry (file+headline "personal/inbox.org" "Notes")
 	 "* %? :NOTE:\n%U\n%a\n" :clock-resume t)))
+
+(shl::package::install 'org-modern)
+(global-org-modern-mode)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;

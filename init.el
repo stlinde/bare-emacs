@@ -647,6 +647,17 @@ of the tab bar."
 (defun shl::completion::setup-company ()
   (shl::package::require 'company)
 
+  (setopt company-idle-delay 0.2
+	  company-dabbrev-downcase nil
+	  company-minimum-prefix-length 1
+	  company-selection-wrap-around t
+	  company-tooltip-align-annotations t
+	  company-dabbrev-ignore-case nil)
+  (setopt tab-always-indent 'complete)
+
+  (define-key company-active-map (kbd "RET") nil)
+  (define-key company-active-map (kbd "C-y") #'company-complete-selection)
+  
   (add-hook 'prog-mode-hook #'company-mode))
 
 (shl::completion::setup-company)
